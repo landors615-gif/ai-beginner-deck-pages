@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>给 AI 小白的入门分享</title>
+  <style>
+    :root {
+      --bg: #04070f;
+      --bg-deep: #060b16;
+      --panel: rgba(10, 16, 30, 0.78);
+      --panel-strong: rgba(12, 20, 36, 0.9);
+      --line: rgba(103, 233, 255, 0.14);
+      --line-soft: rgba(255, 255, 255, 0.06);
+      --text: #eef4ff;
+      --text-soft: #b7c4de;
+      --text-dim: #7282a6;
+      --cyan: #67e9ff;
+      --cyan-glow: rgba(103, 233, 255, 0.18);
+      --violet: #8e7dff;
+      --pink: #ff6ea9;
+      --gold: #ffd777;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.46);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      color: var(--text);
+      font-family: "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 50% -12%, rgba(103,233,255,0.12), transparent 28%),
+        radial-gradient(circle at 90% 8%, rgba(255,110,169,0.10), transparent 22%),
+        radial-gradient(circle at 10% 18%, rgba(142,125,255,0.10), transparent 24%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: pan-y;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 30px 30px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 58%, rgba(0,0,0,0.24) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+      max-width: 460px;
+      height: 100%;
+      margin: 0 auto;
+      background:
+        linear-gradient(180deg, rgba(5,9,18,0.88), rgba(7,11,20,0.94));
+      border-left: 1px solid rgba(255,255,255,0.04);
+      border-right: 1px solid rgba(255,255,255,0.04);
+      box-shadow:
+        0 0 0 1px rgba(103,233,255,0.02),
+        0 20px 80px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+
+    #app::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(103,233,255,0.03), transparent 16%, transparent 84%, rgba(255,110,169,0.03));
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(460px, 100%);
+      height: 2px;
+      background: rgba(255,255,255,0.04);
+      z-index: 130;
+    }
+
+    #progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--pink));
+      box-shadow: 0 0 14px rgba(103,233,255,0.45);
+      transition: width 0.38s ease;
+    }
+
+    #slides-viewport {
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    #slides-track {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      width: 100%;
+      transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .slide {
+      flex: 0 0 100%;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 48px 22px 104px;
+      scrollbar-width: none;
+      position: relative;
+    }
+
+    .slide::-webkit-scrollbar { display: none; }
+
+    .frame {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      text-align: center;
+    }
+
+    .frame::before,
+    .frame::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(360px, 92%);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(103,233,255,0.28), transparent);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .frame::before { top: 3px; }
+    .frame::after { bottom: 3px; opacity: 0.22; }
+
+    .frame.no-lines::before,
+    .frame.no-lines::after {
+      display: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 28px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(103,233,255,0.14);
+      background: rgba(103,233,255,0.05);
+      color: var(--text-dim);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      box-shadow: inset 0 0 16px rgba(103,233,255,0.04);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px rgba(103,233,255,0.6);
+    }
+
+    .mark {
+      width: 94px;
+      height: 94px;
+      border-radius: 30px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      color: #f7fbff;
+      font-size: 29px;
+      font-weight: 760;
+      letter-spacing: 0.08em;
+      background:
+        linear-gradient(180deg, rgba(11,18,32,0.96), rgba(7,12,24,0.96));
+      border: 1px solid rgba(103,233,255,0.14);
+      box-shadow:
+        inset 0 0 28px rgba(103,233,255,0.04),
+        0 16px 42px rgba(0,0,0,0.36),
+        0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .mark::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(103,233,255,0.15), transparent 36%, transparent 64%, rgba(255,110,169,0.12)),
+        radial-gradient(circle at 20% 20%, rgba(103,233,255,0.08), transparent 34%);
+      pointer-events: none;
+    }
+
+    .mark.small {
+      width: 74px;
+      height: 74px;
+      border-radius: 24px;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+    }
+
+    .title {
+      width: 100%;
+      max-width: 356px;
+      font-size: 24px;
+      line-height: 1.22;
+      letter-spacing: -0.024em;
+      font-weight: 760;
+      color: var(--text);
+      margin-bottom: 10px;
+      text-wrap: balance;
+    }
+
+    .title.hero {
+      font-size: 28px;
+      max-width: 372px;
+    }
+
+    .subtitle {
+      width: 100%;
+      max-width: 318px;
+      color: var(--text-dim);
+      font-size: 11.5px;
+      line-height: 1.76;
+      margin-bottom: 24px;
+      text-wrap: balance;
+    }
+
+    .content {
+      width: 100%;
+      max-width: 338px;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.86;
+      text-align: left;
+    }
+
+    .content.center { text-align: center; }
+
+    .lead {
+      color: var(--text);
+      font-size: 13.5px;
+      line-height: 1.9;
+      margin-bottom: 14px;
+      text-wrap: pretty;
+    }
+
+    .highlight {
+      color: #ffffff;
+      font-weight: 760;
+    }
+
+    .muted-neon {
+      color: var(--cyan);
+      text-shadow: 0 0 12px rgba(103,233,255,0.22);
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 25px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.028);
+      color: var(--text-soft);
+      font-size: 10.5px;
+      letter-spacing: 0.02em;
+    }
+
+    .panel,
+    .note,
+    .quote,
+    .card,
+    .concept,
+    .scene,
+    .summary {
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(13,20,36,0.82), rgba(8,13,25,0.88));
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .panel::before,
+    .note::before,
+    .quote::before,
+    .card::before,
+    .concept::before,
+    .scene::before,
+    .summary::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(103,233,255,0.42), transparent);
+      opacity: 0.78;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 15px 16px;
+      font-size: 11.5px;
+      line-height: 1.84;
+      text-align: center;
+      color: #dce9ff;
+      background:
+        linear-gradient(180deg, rgba(13,22,40,0.9), rgba(9,14,26,0.92));
+    }
+
+    .quote {
+      margin-top: 18px;
+      padding: 15px 16px;
+      text-align: center;
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.84;
+    }
+
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .bullet-list li {
+      position: relative;
+      padding-left: 16px;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.86;
+    }
+
+    .bullet-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px rgba(103,233,255,0.52);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 18px 0 2px;
+    }
+
+    .card {
+      padding: 14px;
+      background:
+        linear-gradient(180deg, rgba(12,19,34,0.84), rgba(7,12,23,0.88));
+    }
+
+    .card h4 {
+      color: var(--text);
+      font-size: 11.5px;
+      line-height: 1.5;
+      font-weight: 740;
+      margin-bottom: 6px;
+    }
+
+    .card p {
+      color: var(--text-soft);
+      font-size: 10.8px;
+      line-height: 1.76;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .concept {
+      padding: 14px;
+    }
+
+    .concept-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .concept-icon {
+      width: 31px;
+      height: 31px;
+      border-radius: 12px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(103,233,255,0.07);
+      border: 1px solid rgba(103,233,255,0.14);
+      color: var(--cyan);
+      font-size: 13px;
+      box-shadow: inset 0 0 14px rgba(103,233,255,0.04);
+    }
+
+    .concept-term {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 760;
+      line-height: 1.34;
+    }
+
+    .concept-en {
+      color: var(--text-dim);
+      font-size: 9.8px;
+      line-height: 1.45;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-top: 2px;
+    }
+
+    .concept-desc {
+      color: var(--text-soft);
+      font-size: 11.7px;
+      line-height: 1.78;
+      margin-bottom: 6px;
+    }
+
+    .concept-example {
+      color: var(--text-dim);
+      font-size: 10.7px;
+      line-height: 1.72;
+    }
+
+    .scene {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px;
+      background:
+        linear-gradient(180deg, rgba(12,18,34,0.84), rgba(8,13,24,0.88));
+    }
+
+    .scene-icon {
+      width: 31px;
+      height: 31px;
+      border-radius: 12px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,110,169,0.08);
+      border: 1px solid rgba(255,110,169,0.13);
+      color: #ff9dc8;
+      font-size: 14px;
+      box-shadow: inset 0 0 12px rgba(255,110,169,0.04);
+    }
+
+    .scene-title {
+      color: var(--text);
+      font-size: 12.2px;
+      font-weight: 740;
+      line-height: 1.46;
+      margin-bottom: 4px;
+    }
+
+    .scene-desc {
+      color: var(--text-soft);
+      font-size: 11.2px;
+      line-height: 1.76;
+    }
+
+    .summary {
+      padding: 18px 16px;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .summary p {
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.92;
+    }
+
+    .hero-divider {
+      width: 96px;
+      height: 1px;
+      margin: 0 auto 18px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+    }
+
+    #bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: min(460px, 100%);
+      padding: 10px 16px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(4,7,15,0.84);
+      border-top: 1px solid rgba(103,233,255,0.11);
+      backdrop-filter: blur(18px);
+      z-index: 140;
+    }
+
+    .nav-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(103,233,255,0.14);
+      background: rgba(255,255,255,0.024);
+      color: var(--text-soft);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .nav-btn:active { transform: scale(0.96); }
+
+    .nav-btn.disabled {
+      opacity: 0.24;
+      pointer-events: none;
+    }
+
+    #dots {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+      max-width: 170px;
+      overflow: hidden;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.16);
+      transition: all 0.22s ease;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      width: 18px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--cyan), var(--pink));
+      box-shadow: 0 0 10px rgba(103,233,255,0.35);
+    }
+
+    #chapter-num {
+      min-width: 54px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 10.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide.active .eyebrow,
+    .slide.active .mark,
+    .slide.active .title,
+    .slide.active .subtitle,
+    .slide.active .content {
+      animation: fadeUp 0.46s ease both;
+    }
+
+    @media (max-width: 380px) {
+      .slide { padding-left: 18px; padding-right: 18px; }
+      .title { font-size: 22px; }
+      .title.hero { font-size: 25px; }
+      .content { max-width: 330px; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+
+  <div id="app">
+    <div id="slides-viewport">
+      <div id="slides-track"></div>
+    </div>
+  </div>
+
+  <nav id="bottom-nav">
+    <button class="nav-btn" id="btn-prev" aria-label="上一页">‹</button>
+    <div id="dots"></div>
+    <span id="chapter-num">01/12</span>
+    <button class="nav-btn" id="btn-next" aria-label="下一页">›</button>
+  </nav>
+
+  <script>
+    const chapters = [
+      {
+        id: 0,
+        render: () => `
+          <div class="frame">
+            <div class="eyebrow">AI Beginner Brief</div>
+            <div class="mark">AI</div>
+            <div class="title hero">给 AI 小白的入门分享</div>
+            <div class="subtitle">从名词概念到 Agent 原理与应用 · 一份适合手机翻页，也适合内部转发的轻量型分享页</div>
+            <div class="hero-divider"></div>
+            <div class="content center">
+              <div class="tag-row">
+                <span class="tag">AI 概念</span>
+                <span class="tag">Agent</span>
+                <span class="tag">应用热点</span>
+              </div>
+              <p class="lead">这版不再追求“炫”，而是让内容和气质一起成立：<span class="highlight">黑底、克制、带一点恰到好处的霓虹感。</span></p>
+              <div class="note">左右滑动翻页，当前页内可以自由上下看完整内容，不会再误触翻页。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 1,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">why now</div>
+            <div class="mark small">01</div>
+            <div class="title">为什么现在每个人都该懂一点 AI</div>
+            <div class="subtitle">AI 正在从“新技术”变成“新基础能力”</div>
+            <div class="content">
+              <p class="lead">你可以暂时不用 AI，但如果完全不懂它，很多工作方式会慢慢变得被动。</p>
+              <ul class="bullet-list">
+                <li>AI 已经进入办公、内容、客服、数据分析等日常流程。</li>
+                <li>这轮 AI 最大变化，是它开始通过自然语言直接协作。</li>
+                <li>很多岗位真正的问题，已经不是“要不要用”，而是“怎么用得更好”。</li>
+                <li>理解 AI，本质上是在学习一种新的工作方式。</li>
+              </ul>
+              <div class="quote">会用 AI 的人，不一定更懂技术，但往往更快拿到结果。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 2,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">concepts · 01</div>
+            <div class="mark small">02</div>
+            <div class="title">先把最常见的词讲明白</div>
+            <div class="subtitle">第一组：AI、LLM、多模态、Prompt</div>
+            <div class="content">
+              <p class="lead">这组概念只解决一个问题：让你不再被 AI 黑话吓住。</p>
+              <div class="stack">
+                ${conceptCard('✦','AI','Artificial Intelligence','让机器表现出类似人类智能的能力。','比如识图、语音、推荐、问答，都属于 AI。')}
+                ${conceptCard('✎','LLM','Large Language Model','通过海量文本训练出来、擅长理解和生成语言的模型。','ChatGPT、Claude、Gemini 这类产品，底层基本都属于这一类。')}
+                ${conceptCard('◐','多模态','Multimodal','不只看文字，也能理解图片、音频、视频等信息。','发一张图让 AI 分析，或者发录音让它总结，都是多模态。')}
+                ${conceptCard('⌘','Prompt','Prompt','你给 AI 的任务说明书。','说得越清楚，输出通常越可用。Prompt 本质上是沟通能力。')}
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 3,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">concepts · 02</div>
+            <div class="mark small">03</div>
+            <div class="title">再补一组关键概念</div>
+            <div class="subtitle">第二组：Token、Context、Fine-tuning、Inference</div>
+            <div class="content">
+              <p class="lead">这组概念更偏向理解：模型的边界在哪里，它是怎么工作的。</p>
+              <div class="stack">
+                ${conceptCard('◌','Token','Token','模型处理文本时的基本单位。','输入越长、输出越长，通常消耗越多。')}
+                ${conceptCard('▣','Context','Context','AI 当前任务里能看到的信息范围。','很多所谓“记忆”，本质上只是上下文里还看得到。')}
+                ${conceptCard('↻','Fine-tuning','Fine-tuning','在已有模型基础上继续训练，让它更擅长某类任务。','比如法务模型、客服模型，本质上都是通用模型的定向加强版。')}
+                ${conceptCard('▷','Inference','Inference','模型真正开始回答问题、生成结果的过程。','训练像上学，推理像上班。')}
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 4,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">concepts · 03</div>
+            <div class="mark small">04</div>
+            <div class="title">最后这组，最容易影响判断</div>
+            <div class="subtitle">第三组：RAG、幻觉、Workflow、Agent</div>
+            <div class="content">
+              <p class="lead">理解这组概念，基本就能判断一个 AI 应用到底是真能用，还是只是看起来很聪明。</p>
+              <div class="stack">
+                ${conceptCard('⌕','RAG','Retrieval-Augmented Generation','先检索资料，再基于资料生成答案。','它不是让 AI 更天才，而是让 AI 学会先查资料再说话。')}
+                ${conceptCard('!','幻觉','Hallucination','AI 一本正经说错话，甚至编造内容。','真正危险的点不在于会错，而在于它错得像真的。')}
+                ${conceptCard('⇄','Workflow','Workflow','把多个步骤串起来，让任务自动往前流转。','例如：收到问题 → 分类 → 查知识库 → 生成回复草稿。')}
+                ${conceptCard('◈','Agent','Agent','围绕目标规划步骤、调用工具并推进任务的 AI 系统。','大模型解决“会说”，Agent 更接近“会做”。')}
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 5,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">model intuition</div>
+            <div class="mark small">05</div>
+            <div class="title">大模型为什么看起来这么聪明</div>
+            <div class="subtitle">它不是天生知道真相，而是擅长从模式中组织答案</div>
+            <div class="content">
+              <p class="lead">因为它看过海量文本，学会了语言模式、知识关联，以及什么样的回答在上下文里更合理。</p>
+              <div class="grid-2">
+                <div class="card"><h4>会总结</h4><p>长内容压重点，是它最强的能力之一。</p></div>
+                <div class="card"><h4>会改写</h4><p>润色、重写、整理结构，它通常做得很快。</p></div>
+                <div class="card"><h4>会联想</h4><p>它能把分散概念串起来，所以看起来像理解。</p></div>
+                <div class="card"><h4>也会胡说</h4><p>缺资料约束时，它可能更偏向像真的，而不是真的对。</p></div>
+              </div>
+              <div class="quote">大模型很像一个知识面很广、表达能力很强，但偶尔会自信说错话的实习生。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 6,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">agent</div>
+            <div class="mark small">06</div>
+            <div class="title">Agent 到底是什么</div>
+            <div class="subtitle">最简单的理解：Chatbot 偏回答，Agent 偏接任务做事</div>
+            <div class="content">
+              <p class="lead">Agent 不是另一个神秘模型，而是一种让 AI 能围绕目标规划、调用工具、推进任务的系统形态。</p>
+              <div class="grid-2">
+                <div class="card"><h4>目标</h4><p>先接一个明确任务，而不是只是聊天。</p></div>
+                <div class="card"><h4>规划</h4><p>知道这件事该拆成哪几步来做。</p></div>
+                <div class="card"><h4>工具</h4><p>不只会说，还能接搜索、表格、系统、数据库。</p></div>
+                <div class="card"><h4>闭环</h4><p>执行完一步，还会根据结果继续往下走。</p></div>
+              </div>
+              <div class="quote">一句话：Agent = 以大模型为脑、以工具为手、围绕目标做事的 AI 系统。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 7,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">trend</div>
+            <div class="mark small">07</div>
+            <div class="title">为什么 Agent 这两年突然火了</div>
+            <div class="subtitle">不是词更热了，而是需求和能力终于对上了</div>
+            <div class="content">
+              <ul class="bullet-list">
+                <li>模型能力到了临界点，终于能更稳定地理解复杂指令、拆步骤、调工具。</li>
+                <li>企业诉求变了，不再只满足于“帮我写文案”，而是“能不能帮我跑流程”。</li>
+                <li>软件交互方式开始变化：从点菜单，慢慢走向“直接说目标”。</li>
+                <li>成本和生态成熟了，AI 正在从实验玩具变成可落地的系统能力。</li>
+              </ul>
+              <div class="quote">热点里当然有泡沫，但主线是真的：AI 正在从回答问题走向完成任务。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 8,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">use cases · 01</div>
+            <div class="mark small">08</div>
+            <div class="title">Agent 在工作里能怎么用</div>
+            <div class="subtitle">先看四个最容易理解、也最容易落地的方向</div>
+            <div class="content">
+              <div class="stack">
+                <div class="scene"><div class="scene-icon">💼</div><div><div class="scene-title">办公协同</div><div class="scene-desc">整理会议纪要、写周报、起草邮件、拆待办，是大多数团队最适合先上手的场景。</div></div></div>
+                <div class="scene"><div class="scene-icon">🤝</div><div><div class="scene-title">客服与销售</div><div class="scene-desc">识别客户意图、查知识库、生成回复、跟进线索，能明显提升响应速度和标准化程度。</div></div></div>
+                <div class="scene"><div class="scene-icon">📊</div><div><div class="scene-title">数据分析</div><div class="scene-desc">拉数据、看异常、翻译结论，让非技术同学也能问数、看数、先拿到初步洞察。</div></div></div>
+                <div class="scene"><div class="scene-icon">📣</div><div><div class="scene-title">市场与内容</div><div class="scene-desc">盯热点、做竞品汇总、改多平台文案、出选题建议，信息处理效率会很高。</div></div></div>
+              </div>
+              <div class="quote">这一页讲的是“Agent 能做什么”；下一页讲的是“它为什么对业务真的有价值”。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 9,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">use cases · 02</div>
+            <div class="mark small">09</div>
+            <div class="title">为什么这一块值得重点讲</div>
+            <div class="subtitle">因为 Agent 的价值，不只是替你写点东西，而是开始接住一整段工作</div>
+            <div class="content">
+              <p class="lead">传统 AI 工具更像一个会回答问题的助手，而 Agent 更像一个 <span class="highlight">能沿着流程往下推进的执行者</span>。</p>
+              <ul class="bullet-list">
+                <li><span class="highlight">在办公协同里</span>，它不只是生成一份纪要，而是可以继续整理结论、拆成待办、分给不同角色，减少会后重复劳动。</li>
+                <li><span class="highlight">在客服与销售里</span>，它不只是给一句回复建议，而是能结合知识库、客户上下文和流程规则，帮团队更稳定地服务更多请求。</li>
+                <li><span class="highlight">在数据分析里</span>，它的意义不是替代分析师，而是把“取数、初筛、翻译成人话”这部分先做掉，让人把精力放在判断和决策上。</li>
+                <li><span class="highlight">在市场内容里</span>，它最有价值的地方不是单篇文案，而是持续扫描信息、形成初稿、做多版本适配，把高频内容生产变轻。</li>
+              </ul>
+              <div class="quote">所以 Agent 真正改变的，不是某一个回答，而是整段工作流程的起点、速度和衔接方式。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 10,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">risk</div>
+            <div class="mark small">09</div>
+            <div class="title">企业落地 AI 最容易踩的坑</div>
+            <div class="subtitle">别只看惊艳 demo，更要看稳定性、流程和权限</div>
+            <div class="content">
+              <ul class="bullet-list">
+                <li>把 AI 当真理机器：说得流畅，不代表说得对。</li>
+                <li>只上模型，不改流程：没有数据、工作流和标准，提效很难发生。</li>
+                <li>场景选错：优先做高频、重复、可校验、低风险的事。</li>
+                <li>忽略权限和数据安全：客户信息、财务数据、内部规则都要谨慎处理。</li>
+              </ul>
+              <div class="quote">AI Demo 很容易惊艳，真正难的是连续 100 次都还能稳定工作。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 10,
+        render: () => `
+          <div class="frame no-lines">
+            <div class="eyebrow">how to start</div>
+            <div class="mark small">10</div>
+            <div class="title">如果你是 AI 小白，最实用的入门建议</div>
+            <div class="subtitle">先学会提问题，再逐步把 AI 放进自己的工作流</div>
+            <div class="content">
+              <ul class="bullet-list">
+                <li>先学会把问题说清楚，而不是先学复杂术语。</li>
+                <li>先从小任务提效开始，比如会议纪要、资料总结、邮件草稿。</li>
+                <li>重要结果永远复核，尤其是数据、合同、对外承诺。</li>
+                <li>别先问会不会被替代，先问哪部分最适合被 AI 增强。</li>
+              </ul>
+              <div class="quote">最好的入门方式，不是看懂所有概念，而是拿一个真实问题让 AI 帮你解决一次。</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 11,
+        render: () => `
+          <div class="frame">
+            <div class="eyebrow">summary</div>
+            <div class="mark small">✓</div>
+            <div class="title">AI 不是一个新软件<br>而是一种新的工作方式</div>
+            <div class="subtitle">这页可以直接转给还没入门 AI 的同事</div>
+            <div class="content center">
+              <div class="summary">
+                <p>看完这份分享，至少应该带走三件事：<br><br>
+                1. 常见 AI 名词不再陌生<br>
+                2. 知道 Agent 为什么值得关注<br>
+                3. 明白 AI 在工作里最适合先增强哪一部分</p>
+              </div>
+              <div class="note">如果你身边还有 AI 小白，这一页可以直接转给他。下一步不是继续围观，而是开始把 AI 用进自己的工作流。</div>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    function conceptCard(icon, term, en, desc, example) {
+      return `
+        <div class="concept">
+          <div class="concept-head">
+            <div class="concept-icon">${icon}</div>
+            <div>
+              <div class="concept-term">${term}</div>
+              <div class="concept-en">${en}</div>
+            </div>
+          </div>
+          <div class="concept-desc">${desc}</div>
+          <div class="concept-example">例子：${example}</div>
+        </div>
+      `;
+    }
+
+    const track = document.getElementById('slides-track');
+    const dotsEl = document.getElementById('dots');
+    const fillEl = document.getElementById('progress-fill');
+    const numEl = document.getElementById('chapter-num');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+
+    let current = 0;
+    let isAnimating = false;
+    let touchStartY = 0;
+    let touchStartX = 0;
+
+    chapters.forEach((ch, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'slide';
+      slide.dataset.idx = i;
+      slide.innerHTML = ch.render();
+      track.appendChild(slide);
+    });
+
+    chapters.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goTo(i));
+      dotsEl.appendChild(dot);
+    });
+
+    function goTo(idx, force = false) {
+      if ((!force && isAnimating) || idx < 0 || idx >= chapters.length || idx === current) return;
+      isAnimating = true;
+
+      const prevSlide = track.querySelector(`[data-idx="${current}"]`);
+      const nextSlide = track.querySelector(`[data-idx="${idx}"]`);
+      if (prevSlide) prevSlide.classList.remove('active');
+      if (nextSlide) nextSlide.classList.add('active');
+
+      current = idx;
+      track.style.transform = `translateX(-${current * 100}%)`;
+      updateUI();
+
+      setTimeout(() => { isAnimating = false; }, 420);
+    }
+
+    function updateUI() {
+      fillEl.style.width = `${(current / (chapters.length - 1)) * 100}%`;
+      numEl.textContent = `${String(current + 1).padStart(2, '0')}/${chapters.length}`;
+      btnPrev.classList.toggle('disabled', current === 0);
+      btnNext.classList.toggle('disabled', current === chapters.length - 1);
+      dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+
+    function prev() { goTo(current - 1); }
+    function next() { goTo(current + 1); }
+
+    btnPrev.addEventListener('click', prev);
+    btnNext.addEventListener('click', next);
+
+    let wheelLock = false;
+    window.addEventListener('wheel', e => {
+      if (wheelLock) return;
+      if (Math.abs(e.deltaX) < 12 && Math.abs(e.deltaY) < 12) return;
+      wheelLock = true;
+      setTimeout(() => wheelLock = false, 820);
+      const primaryDelta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (primaryDelta > 0) next(); else prev();
+    }, { passive: true });
+
+    window.addEventListener('keydown', e => {
+      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); next(); }
+      if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
+      if (e.key === 'ArrowDown') {
+        const active = track.querySelector(`[data-idx="${current}"]`);
+        if (active) active.scrollBy({ top: 80, behavior: 'smooth' });
+      }
+      if (e.key === 'ArrowUp') {
+        const active = track.querySelector(`[data-idx="${current}"]`);
+        if (active) active.scrollBy({ top: -80, behavior: 'smooth' });
+      }
+    });
+
+    window.addEventListener('touchstart', e => {
+      touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', e => {
+      const dy = touchStartY - e.changedTouches[0].clientY;
+      const dx = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+        if (dx > 0) next(); else prev();
+      }
+    }, { passive: true });
+
+    goTo(0, true);
+  </script>
+</body>
+</html>
